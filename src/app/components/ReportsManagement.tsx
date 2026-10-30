@@ -63,6 +63,10 @@ const certificacionesMensuales = [
   { mes: "Jun", cantidad: 228 },
 ];
 
+/**
+ * Módulo de reportes: indicadores y gráficos (Recharts) por periodo, organizados en pestañas, con exportación.
+ * Rol: administrador.
+ */
 export function ReportsManagement() {
   const [periodo, setPeriodo] = useState("6meses");
   const [tipoReporte, setTipoReporte] = useState("general");

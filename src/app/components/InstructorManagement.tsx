@@ -7,6 +7,10 @@ import { StatCard } from "./StatCard";
 import { NewInstructorDialog } from "./NewInstructorDialog";
 import { InstructorCertificateDesigner } from "./InstructorCertificateDesigner";
 
+/**
+ * Vista contenedora del módulo de instructores: indicadores, buscador, registro de instructores
+ * y diseñador de certificados. Rol: administrador.
+ */
 export function InstructorManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewInstructorOpen, setIsNewInstructorOpen] = useState(false);

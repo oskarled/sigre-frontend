@@ -84,6 +84,9 @@ interface NewsSectionProps {
   onViewAll: () => void;
 }
 
+/**
+ * Resumen de las últimas noticias en la pantalla de inicio. Prop: onViewAll (abre la vista completa).
+ */
 export function NewsSection({ onViewAll }: NewsSectionProps) {
   return (
     <div className="mt-16 pb-12">

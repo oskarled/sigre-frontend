@@ -15,6 +15,10 @@ interface LoginScreenProps {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * Pantalla de inicio de sesión: selección de rol, correo y contraseña con validación.
+ * Mientras no exista autenticación con JWT, entra con el usuario de demostración del rol elegido.
+ */
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<UserRole>("participante");
@@ -269,7 +273,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
             {/* Footer */}
             <div className="text-center mt-6 text-sm text-white/90">
               <p>© {new Date().getFullYear()} ECM Training Center. Todos los derechos reservados.</p>
-              <p className="mt-1">Sistema SIGRE v1.1</p>
+              <p className="mt-1">Sistema SIGRE v1.3</p>
             </div>
           </div>
         </div>

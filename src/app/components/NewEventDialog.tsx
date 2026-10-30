@@ -42,6 +42,10 @@ function Campo({ id, label, error, children }: { id: string; label: string; erro
   );
 }
 
+/**
+ * Formulario para crear un curso (React Hook Form).
+ * Valida los mismos campos que CursoEventoRequest del backend y carga la lista de instructores. Rol: administrador.
+ */
 export function NewEventDialog({ open, onOpenChange, onCrear }: NewEventDialogProps) {
   const [instructores, setInstructores] = useState<InstructorOpcion[]>([]);
   const [guardando, setGuardando] = useState(false);

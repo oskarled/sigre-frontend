@@ -27,6 +27,10 @@ interface HomeViewProps {
   onViewAllNews: () => void;
 }
 
+/**
+ * Pantalla de inicio. Muestra un resumen distinto según el rol:
+ * próximos cursos, inscripciones del participante y accesos rápidos a los módulos.
+ */
 export function HomeView({ user, cursos, misInscripciones, onNavigate, onViewAllNews }: HomeViewProps) {
   const activos = cursos.filter((c) => c.estado === "PROGRAMADO" || c.estado === "EN_CURSO");
   const emitidos = mockCertificates.filter((c) => c.estado === "emitido");

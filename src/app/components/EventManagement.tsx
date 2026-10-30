@@ -20,6 +20,11 @@ interface EventManagementProps {
   onCancelarInscripcion: (idInscripcion: number) => Promise<void>;
 }
 
+/**
+ * Vista contenedora del módulo de cursos.
+ * Filtra los cursos según el rol (el instructor ve solo los suyos y los borradores solo el administrador),
+ * y maneja la búsqueda, la paginación y el diálogo de nuevo curso.
+ */
 export function EventManagement({
   user,
   cursos,
@@ -32,7 +37,10 @@ export function EventManagement({
   const [currentPage, setCurrentPage] = useState(1);
   const [isNewEventOpen, setIsNewEventOpen] = useState(false);
 
+  // Solo el administrador puede crear cursos (ver lib/roles.ts)
   const puedeGestionar = can.gestionarEventos(user.role);
+
+  // Título y descripción de la pantalla según el rol
 
   const copy = {
     participante: {
@@ -49,12 +57,13 @@ export function EventManagement({
     },
   }[user.role];
 
-  // Qué eventos ve cada rol
+  // Ids de los cursos en los que el participante tiene una inscripción activa
   const inscritoEn = useMemo(
     () => new Set(misInscripciones.filter(inscripcionActiva).map((i) => i.idCurso)),
     [misInscripciones],
   );
 
+  // Qué cursos ve cada rol: el participante los abiertos y los suyos; el instructor solo los asignados
   const visibles = useMemo(() => {
     return cursos.filter((c) => {
       if (user.role === "participante") {
@@ -65,6 +74,7 @@ export function EventManagement({
     });
   }, [cursos, user, inscritoEn]);
 
+  // Búsqueda por nombre, lugar, instructor o estado (sin distinguir mayúsculas)
   const filtrados = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return visibles;

@@ -52,6 +52,10 @@ function Bloque({ icon: Icon, color, title, children }: { icon: typeof Calendar;
   );
 }
 
+/**
+ * Diálogo con el detalle completo de un curso (horario, lugar, instructor y aforo)
+ * y los botones para inscribirse o cancelar la inscripción.
+ */
 export function EventPreviewDialog({
   curso,
   role,

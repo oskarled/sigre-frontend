@@ -52,6 +52,9 @@ const cursos = [
   "Manejo Defensivo"
 ];
 
+/**
+ * Formulario por secciones para registrar un participante (datos personales, contacto y empresa).
+ */
 export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }: NewParticipantDialogProps) {
   const [currentSection, setCurrentSection] = useState(1);
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<ParticipantFormData>();

@@ -25,6 +25,9 @@ const ROLE_BADGE: Record<SessionUser["role"], string> = {
   administrador: "border-gray-800 text-gray-800",
 };
 
+/**
+ * Encabezado de la aplicación: logo, nombre y rol del usuario, y menú para perfil, ajustes y cerrar sesión.
+ */
 export function Header({ onLogout, user }: HeaderProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);

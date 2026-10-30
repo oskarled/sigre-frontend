@@ -10,6 +10,9 @@ interface ParticipantPreviewDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Diálogo con los datos completos de un participante.
+ */
 export function ParticipantPreviewDialog({ participant, open, onOpenChange }: ParticipantPreviewDialogProps) {
   if (!participant) return null;
 

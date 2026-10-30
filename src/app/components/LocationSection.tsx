@@ -8,6 +8,9 @@ const MAPS_QUERY = encodeURIComponent(`ECM Training Center, ${DIRECCION}, ${CIUD
 const MAPS_EMBED = `https://maps.google.com/maps?q=${MAPS_QUERY}&z=16&output=embed`;
 const MAPS_LINK = `https://www.google.com/maps/search/?api=1&query=${MAPS_QUERY}`;
 
+/**
+ * Sección con la dirección de ECM Training Center, el mapa embebido y el enlace a Google Maps.
+ */
 export function LocationSection() {
   return (
     <div className="mt-16 pb-12">
