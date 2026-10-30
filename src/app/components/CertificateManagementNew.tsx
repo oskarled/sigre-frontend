@@ -95,6 +95,10 @@ interface CertificateManagementProps {
   user: SessionUser;
 }
 
+/**
+ * Módulo de certificados: lista con búsqueda, estado, paginación, indicadores y descarga en PDF.
+ * El participante solo ve sus propios certificados. Prop: user (usuario en sesión).
+ */
 export function CertificateManagementNew({ user }: CertificateManagementProps) {
   const esParticipante = user.role === "participante";
   const puedeEmitir = can.emitirCertificados(user.role);

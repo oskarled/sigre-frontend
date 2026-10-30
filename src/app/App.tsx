@@ -16,6 +16,12 @@ import type { CursoEvento, CursoEventoRequest, Inscripcion } from "./models/curs
 import { cursosService } from "./services/cursosService";
 import { usaBackend } from "./services/http";
 
+/**
+ * Componente raíz de SIGRE.
+ * - Guarda la sesión del usuario y la pestaña activa del menú.
+ * - Mantiene el estado compartido (cursos e inscripciones) para que todas las vistas muestren los mismos datos.
+ * - Es el único componente que crea cursos, inscribe y cancela inscripciones a través de cursosService.
+ */
 export default function App() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [activeNavItem, setActiveNavItem] = useState<NavId>("inicio");
@@ -27,6 +33,7 @@ export default function App() {
   const [cargando, setCargando] = useState(false);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
 
+  // Consulta los cursos (y, si es participante, sus inscripciones) a la API o a los datos de demostración.
   const cargarDatos = useCallback(async (sesion: SessionUser) => {
     setCargando(true);
     setErrorCarga(null);
@@ -44,15 +51,18 @@ export default function App() {
     }
   }, []);
 
+  // Cada vez que cambia el usuario en sesión se vuelven a cargar los datos.
   useEffect(() => {
     if (user) cargarDatos(user);
   }, [user, cargarDatos]);
 
+  // Inicio de sesión: guarda el usuario y lo lleva a Inicio.
   const handleLogin = (sessionUser: SessionUser) => {
     setUser(sessionUser);
     setActiveNavItem("inicio");
   };
 
+  // Cierre de sesión: limpia todo el estado para que el siguiente usuario no vea datos del anterior.
   const handleLogout = () => {
     setUser(null);
     setActiveNavItem("inicio");
@@ -61,11 +71,13 @@ export default function App() {
     setMisInscripciones([]);
   };
 
+  // Cambio de opción en el menú.
   const handleNavigate = (id: NavId) => {
     setShowAllNews(false);
     setActiveNavItem(id);
   };
 
+  // Crea un curso (administrador). Devuelve true si se guardó para que el formulario se cierre.
   const handleCrearCurso = async (datos: CursoEventoRequest): Promise<boolean> => {
     try {
       const creado = await cursosService.crearCurso(datos);
@@ -78,6 +90,7 @@ export default function App() {
     }
   };
 
+  // Inscribe al participante en sesión. El servidor valida el aforo y responde con error si no hay cupos.
   const handleInscribirse = async (idCurso: number) => {
     if (!user) return;
     try {
@@ -91,6 +104,7 @@ export default function App() {
     await cargarDatos(user); // refresca cupos e inscripciones con lo que diga el servidor
   };
 
+  // Cancela una inscripción del participante y libera el cupo.
   const handleCancelarInscripcion = async (idInscripcion: number) => {
     if (!user) return;
     try {
@@ -114,6 +128,7 @@ export default function App() {
   // Si por algún motivo la pestaña activa no corresponde al rol, se vuelve a Inicio.
   const current: NavId = canAccess(user.role, activeNavItem) ? activeNavItem : "inicio";
 
+  // Elige qué vista mostrar según la opción del menú.
   const renderContent = () => {
     if (showAllNews) {
       return <AllNewsView onBack={() => setShowAllNews(false)} />;

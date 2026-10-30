@@ -1,5 +1,15 @@
 # Historial de cambios
 
+## v1.3.0 · Evidencia GA7-220501096-AA4-EV03
+
+- **Comentarios en el código**: cada componente tiene un comentario de documentación (JSDoc) que explica su
+  propósito, los datos que recibe y el rol que lo usa; se comentaron los manejadores de `App`, los filtros de
+  `EventManagement` y la lógica de inscripción de `EventsTable`.
+- **Paginación**: los botones anterior/siguiente mostraban dos flechas; ahora muestran una y tienen
+  `aria-label`. La página activa se marca con `aria-current`.
+- Versión visible en el login y en Ajustes actualizada a v1.3.
+- Capturas de la navegación por rol en `docs/capturas`.
+
 ## v1.2.0 · Base oficial conectada al backend
 
 - **Modelo alineado con `sigre-modulo-cursos`**: `CursoEvento`, `Inscripcion`, estados `PROGRAMADO`,

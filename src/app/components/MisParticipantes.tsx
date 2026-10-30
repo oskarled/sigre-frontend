@@ -13,7 +13,10 @@ interface MisParticipantesProps {
   cursos: CursoEvento[];
 }
 
-/** Vista del instructor: inscritos en sus cursos, leídos de GET /api/cursos/{id}/inscripciones. */
+/**
+ * Lista de los participantes inscritos en los cursos del instructor en sesión, con buscador y totales.
+ * Consulta las inscripciones de cada curso a través de cursosService. Rol: instructor.
+ */
 export function MisParticipantes({ user, cursos }: MisParticipantesProps) {
   const [inscripciones, setInscripciones] = useState<Inscripcion[] | null>(null);
   const [error, setError] = useState<string | null>(null);

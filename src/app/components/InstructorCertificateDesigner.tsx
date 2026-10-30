@@ -18,6 +18,9 @@ interface InstructorCertificateDesignerProps {
   instructor?: any;
 }
 
+/**
+ * Editor del certificado de un instructor, con vista previa y exportación a PDF. Rol: administrador.
+ */
 export function InstructorCertificateDesigner({ open, onOpenChange, instructor }: InstructorCertificateDesignerProps) {
   const [formData, setFormData] = useState({
     nombreInstructor: "",

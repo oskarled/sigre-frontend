@@ -8,6 +8,11 @@ Proyecto formativo SENA · Tecnología en Análisis y Desarrollo de Software · 
 | Frontend | React 18 + TypeScript + Vite + Tailwind CSS 4 | este repositorio (`sigre-frontend`) |
 | Backend | Spring Boot 3.2 + Java 17 + MySQL 8 | [`sigre-modulo-cursos`](https://github.com/oskarled/sigre-modulo-cursos) |
 
+## Capturas
+
+La carpeta [`docs/capturas`](docs/capturas) tiene la navegación completa de los tres roles
+(participante, instructor y administrador) en modo demostración.
+
 ## Requisitos
 
 - Node.js 20 o superior (recomendado 22 LTS)

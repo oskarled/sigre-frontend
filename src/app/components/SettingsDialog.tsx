@@ -19,6 +19,10 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Diálogo de ajustes de la cuenta: cambio de contraseña, preferencias (idioma, zona horaria, formato de fecha)
+ * y notificaciones.
+ */
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [activeTab, setActiveTab] = useState("cuenta");
   
@@ -633,7 +637,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-gray-500 mt-0.5" />
             <div className="flex-1">
-              <p className="font-semibold text-gray-900">Sistema SIGRE v1.1</p>
+              <p className="font-semibold text-gray-900">Sistema SIGRE v1.3</p>
               <p className="text-sm text-gray-600">
                 ECM Training Center • Última actualización: 19 Oct 2026
               </p>

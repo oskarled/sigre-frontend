@@ -192,6 +192,9 @@ interface ParticipantsTableProps {
   participants: Participant[];
 }
 
+/**
+ * Tabla del directorio de participantes con su estado y la acción de ver detalle.
+ */
 export function ParticipantsTable({ participants }: ParticipantsTableProps) {
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);

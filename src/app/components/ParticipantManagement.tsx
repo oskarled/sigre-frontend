@@ -18,6 +18,10 @@ interface ParticipantManagementProps {
   cursos: CursoEvento[];
 }
 
+/**
+ * Vista contenedora del módulo de participantes.
+ * Instructor: muestra MisParticipantes. Administrador: directorio con búsqueda, registro e importación.
+ */
 export function ParticipantManagement({ user, cursos }: ParticipantManagementProps) {
   // El instructor ve los inscritos reales de sus cursos (vienen del backend).
   if (user.role === "instructor") return <MisParticipantes user={user} cursos={cursos} />;

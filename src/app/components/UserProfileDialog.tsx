@@ -19,6 +19,9 @@ interface UserProfileDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Diálogo con el perfil del usuario en sesión (foto y datos editables según el rol).
+ */
 export function UserProfileDialog({ user, open, onOpenChange }: UserProfileDialogProps) {
   const role = user.role;
   // Nombre y correo de la sesión. El resto del perfil es de ejemplo hasta que exista GET /api/usuarios/{id}.
