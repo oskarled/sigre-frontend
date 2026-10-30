@@ -11,6 +11,9 @@ interface InstructorPreviewDialogProps {
   onOpenCertifications?: (instructor: any) => void;
 }
 
+/**
+ * Diálogo con la hoja de vida de un instructor (datos, formación y especialidades).
+ */
 export function InstructorPreviewDialog({ instructor, open, onOpenChange, onOpenCertifications }: InstructorPreviewDialogProps) {
   if (!instructor) return null;
 

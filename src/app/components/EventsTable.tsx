@@ -23,12 +23,19 @@ interface EventsTableProps {
   onCancelarInscripcion: (idInscripcion: number) => Promise<void>;
 }
 
+/**
+ * Tabla de cursos con estado, fechas, cupos y acción de inscripción.
+ * Aplica las reglas de aforo del modelo (admiteInscripcion) para mostrar "Inscribirme", "Inscrito", "Sin cupos" o "Cerrado".
+ */
 export function EventsTable({ cursos, role, misInscripciones, onInscribirse, onCancelarInscripcion }: EventsTableProps) {
+  // Curso abierto en el diálogo de detalle (null = ninguno)
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  // Curso cuya inscripción se está enviando; sirve para deshabilitar el botón y evitar doble clic
   const [enviando, setEnviando] = useState<number | null>(null);
   const selected = cursos.find((c) => c.id === selectedId) ?? null;
   const puedeInscribirse = can.inscribirse(role);
 
+  // Inscripción activa del usuario en un curso, si existe
   const inscripcionDe = (idCurso: number) =>
     misInscripciones.find((i) => i.idCurso === idCurso && inscripcionActiva(i));
 
@@ -41,6 +48,7 @@ export function EventsTable({ cursos, role, misInscripciones, onInscribirse, onC
     }
   };
 
+  // Muestra la acción que corresponde al curso: Inscrito, Sin cupos / Cerrado o el botón Inscribirme
   const AccionInscripcion = ({ curso }: { curso: CursoEvento }) => {
     if (!puedeInscribirse) return null;
     if (inscripcionDe(curso.id)) {

@@ -24,6 +24,9 @@ interface InstructorCertificationsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Diálogo para consultar, agregar y eliminar las certificaciones vigentes de un instructor.
+ */
 export function InstructorCertificationsDialog({ instructor, open, onOpenChange }: InstructorCertificationsDialogProps) {
   const [certifications, setCertifications] = useState<Certification[]>([
     {

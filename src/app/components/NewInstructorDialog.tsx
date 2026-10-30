@@ -62,6 +62,9 @@ const especialidades = [
   "Higiene Industrial"
 ];
 
+/**
+ * Formulario por secciones para registrar un instructor (datos personales, formación y especialidades).
+ */
 export function NewInstructorDialog({ open, onOpenChange, onInstructorAdded }: NewInstructorDialogProps) {
   const [currentSection, setCurrentSection] = useState(1);
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<InstructorFormData>();

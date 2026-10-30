@@ -7,6 +7,10 @@ interface NavigationProps {
   onItemClick: (itemId: NavId) => void;
 }
 
+/**
+ * Barra de navegación. Dibuja solo las opciones que el rol tiene permitidas (lib/roles.ts)
+ * y marca la opción activa con aria-current para lectores de pantalla.
+ */
 export function Navigation({ role, activeItem, onItemClick }: NavigationProps) {
   const navItems = navItemsFor(role);
 

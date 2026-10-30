@@ -173,6 +173,10 @@ interface AllNewsViewProps {
   onBack: () => void;
 }
 
+/**
+ * Vista completa de noticias de ECM Training Center con buscador.
+ * Props: onBack (vuelve al inicio). Rol: todos.
+ */
 export function AllNewsView({ onBack }: AllNewsViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("Todas");

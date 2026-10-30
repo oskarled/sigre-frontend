@@ -226,6 +226,10 @@ interface InstructorsTableProps {
   searchQuery?: string;
 }
 
+/**
+ * Tabla del directorio de instructores. Desde cada fila se abre el detalle,
+ * las certificaciones o el diseñador de certificado. Props: instructors, searchQuery.
+ */
 export function InstructorsTable({ instructors = mockInstructors, searchQuery = "" }: InstructorsTableProps) {
   const [selectedInstructor, setSelectedInstructor] = useState<Instructor | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);

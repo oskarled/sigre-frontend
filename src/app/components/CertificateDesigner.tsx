@@ -18,6 +18,11 @@ interface CertificateDesignerProps {
   certificate?: any;
 }
 
+/**
+ * Editor del certificado de un participante.
+ * Muestra una vista previa en una ventana arrastrable y redimensionable y la exporta a PDF (jsPDF + html2canvas).
+ * Rol: instructor y administrador.
+ */
 export function CertificateDesigner({ open, onOpenChange, certificate }: CertificateDesignerProps) {
   const [formData, setFormData] = useState({
     participante: "",

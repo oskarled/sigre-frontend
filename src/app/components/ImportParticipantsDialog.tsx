@@ -11,6 +11,10 @@ interface ImportParticipantsDialogProps {
   onParticipantsImported: (participants: any[]) => void;
 }
 
+/**
+ * Diálogo para importar participantes de forma masiva desde un archivo .xlsx, .xls o .csv.
+ * Valida el formato del archivo y permite descargar la plantilla. Rol: administrador.
+ */
 export function ImportParticipantsDialog({ 
   open, 
   onOpenChange,
