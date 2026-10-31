@@ -25,7 +25,7 @@
 - **Pruebas** con Vitest (21 pruebas) e **integración continua** con GitHub Actions.
 - Documentación: README, flujo de ramas (CONTRIBUTING.md), `.env.example` y cambios sugeridos al backend
   (`docs/backend`).
-- Usuarios de demostración iguales a los del backend: Maria Perez, Carlos Ortega y Laura Mendoza.
+- Usuarios de demostración iguales a los del backend: Maria Perez, Carlos Ortega y Elkin Caicedo.
 
 ## v1.1.0 · Revisión del prototipo de Figma Make
 

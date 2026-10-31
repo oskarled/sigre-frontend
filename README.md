@@ -60,7 +60,7 @@ y contraseña. Los usuarios son los mismos que crea `CargaDatosDemostracion` en 
 |-----------------|----------------|---------|-----------:|--------------:|
 | Participante | ASISTENTE | Maria Perez | 3 | — |
 | Instructor | INSTRUCTOR | Carlos Ortega | 2 | 1 |
-| Administrador | ADMIN | Laura Mendoza | 1 | — |
+| Administrador | ADMIN | Elkin Caicedo | 1 | — |
 
 ## Comandos
 

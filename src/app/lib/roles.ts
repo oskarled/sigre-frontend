@@ -25,7 +25,7 @@ export interface SessionUser {
 export const DEMO_USERS: Record<UserRole, Omit<SessionUser, "email">> = {
   participante: { role: "participante", idUsuario: 3, nombre: "Maria Perez" },
   instructor: { role: "instructor", idUsuario: 2, idInstructor: 1, nombre: "Carlos Ortega" },
-  administrador: { role: "administrador", idUsuario: 1, nombre: "Laura Mendoza" },
+  administrador: { role: "administrador", idUsuario: 1, nombre: "Elkin Caicedo" },
 };
 
 export const ROLE_LABEL: Record<UserRole, string> = {
