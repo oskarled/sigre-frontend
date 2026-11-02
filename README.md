@@ -53,14 +53,23 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ### Usuarios para entrar
 
-Todavía no hay módulo de autenticación: se elige el rol en la pantalla de inicio y se escribe cualquier correo
-y contraseña. Los usuarios son los mismos que crea `CargaDatosDemostracion` en el backend:
+El inicio de sesión valida las credenciales (`services/authService.ts`):
 
-| Rol en pantalla | Rol en backend | Usuario | id_usuario | id_instructor |
-|-----------------|----------------|---------|-----------:|--------------:|
-| Participante | ASISTENTE | Maria Perez | 3 | — |
-| Instructor | INSTRUCTOR | Carlos Ortega | 2 | 1 |
-| Administrador | ADMIN | Elkin Caicedo | 1 | — |
+- **Modo conectado**: envía correo y contraseña a `POST /api/auth/login`; el backend compara la contraseña
+  cifrada con BCrypt y devuelve el rol. Si no coinciden responde 401 y la pantalla muestra
+  "Correo o contraseña incorrectos".
+- **Modo demostración**: valida contra los mismos usuarios que crea `CargaDatosDemostracion` (perfil `dev`).
+  Al elegir una pestaña de rol se carga su correo; cualquier otra credencial se rechaza.
+
+Contraseña de los usuarios de prueba: `Sigre2026`
+
+| Rol | Rol en backend | Usuario | Correo | id_usuario | id_instructor |
+|-----|----------------|---------|--------|-----------:|--------------:|
+| Participante | ASISTENTE | Maria Perez | maria.perez@correo.com | 3 | — |
+| Instructor | INSTRUCTOR | Carlos Ortega | carlos.ortega@ecm.com | 2 | 1 |
+| Administrador | ADMIN | Elkin Caicedo | elkin.caicedo@ecm.com | 1 | — |
+
+El rol de la sesión es el que asigna el sistema, no la pestaña elegida.
 
 ## Comandos
 
@@ -80,6 +89,10 @@ src/app/
   models/curso.ts            Tipos y reglas del dominio (iguales a los DTO del backend)
   services/http.ts           Cliente HTTP: URL base, JSON y errores ProblemDetail
   services/cursosService.ts  Contrato CursosService con dos implementaciones (API real y demostración)
+  services/authService.ts    Inicio de sesión (POST /api/auth/login o usuarios de demostración)
+  services/directorioService.ts  Participantes, instructores y certificados (API o demostración)
+  lib/exportar.ts            Exportación CSV (Excel) y PDF, lectura de CSV para importar
+  lib/reportes.ts            Cálculos del reporte de ocupación de cursos
   mocks/cursos.ts            Datos del modo demostración
   lib/roles.ts               Roles, menú por rol y permisos
   lib/dates.ts               Fechas sin desfase de zona horaria
@@ -95,22 +108,31 @@ a la API real sin tocar la interfaz.
 
 | Método | Ruta | Pantalla |
 |--------|------|----------|
-| GET | `/api/cursos` | Inicio, Cursos |
+| POST | `/api/auth/login` | Inicio de sesión |
+| POST | `/api/auth/registro` | Nuevo participante e importación de participantes (administrador) |
+| GET | `/api/usuarios?rol=ASISTENTE` | Directorio de participantes (administrador) |
+| GET / POST | `/api/instructores` | Directorio y registro de instructores (administrador); opciones de "Nuevo curso" |
+| GET | `/api/cursos` | Inicio, Cursos, Reportes |
 | POST | `/api/cursos` | Nuevo curso (administrador) |
 | POST | `/api/cursos/{id}/inscripciones` | Inscribirme (participante) |
 | GET | `/api/cursos/{id}/inscripciones` | Detalle del curso y Mis participantes (instructor) |
 | GET | `/api/usuarios/{id}/inscripciones` | Mis inscripciones (participante) |
 | PATCH | `/api/inscripciones/{id}/cancelar` | Cancelar inscripción (participante) |
+| GET | `/api/certificados` | Certificados |
+| GET | `/api/certificados/verificar/{codigo}` | Verificar certificado por código |
 
-### Qué está conectado y qué sigue siendo de ejemplo
+### Estado de los módulos (v1.4.0)
 
 | Módulo | Estado |
 |--------|--------|
+| Inicio de sesión | Conectado a `/api/auth/login`; en demostración valida usuarios y contraseña |
 | Cursos e inscripciones | Conectado a la API |
 | Mis participantes (instructor) | Conectado (inscritos de sus cursos) |
-| Inicio de sesión | Simulado: falta el módulo de autenticación (JWT) |
-| Directorio de participantes e instructores | Datos de ejemplo: falta módulo de usuarios |
-| Certificados y reportes | Datos de ejemplo: faltan endpoints |
+| Directorio de participantes | Conectado (listar y registrar); importación real desde CSV |
+| Directorio de instructores | Conectado (listar y registrar) |
+| Certificados | Listado y verificación por código conectados; exportación del listado a CSV |
+| Reportes | Reporte de ocupación con los cursos reales, exportable a PDF y Excel (CSV). Los gráficos históricos siguen siendo de ejemplo hasta que el backend exponga estadísticas por periodo |
+| Sesión con token (JWT) | Pendiente en el backend |
 
 ## Flujo de trabajo con Git
 
