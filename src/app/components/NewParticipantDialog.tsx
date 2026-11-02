@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import type { NuevoParticipante } from "../services/directorioService";
 import { useForm } from "react-hook-form@7.55.0";
 import { toast } from "sonner@2.0.3";
 import { X } from "lucide-react";
@@ -11,7 +12,8 @@ import { X } from "lucide-react";
 interface NewParticipantDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onParticipantAdded: (participant: any) => void;
+  /** Entrega los datos validados; el contenedor los registra en el sistema. */
+  onParticipantAdded: (participant: NuevoParticipante) => void;
 }
 
 interface ParticipantFormData {
@@ -60,24 +62,18 @@ export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }:
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<ParticipantFormData>();
 
   const onSubmit = (data: ParticipantFormData) => {
-    const newParticipant = {
-      id: Date.now(),
-      nombre: `${data.nombres} ${data.apellidos}`,
+    // Datos que exige el registro del backend (RegistroRequest) más los informativos del formulario.
+    const newParticipant: NuevoParticipante = {
+      nombre: `${data.nombres} ${data.apellidos}`.trim(),
+      correo: data.email,
       documento: data.numeroDocumento,
-      curso: data.cursoSeleccionado,
-      email: data.email,
       telefono: data.telefono,
       empresa: data.empresa,
       cargo: data.cargo,
-      fechaRegistro: new Date().toLocaleDateString('es-CO'),
-      estado: "Activo",
-      ...data
+      curso: data.cursoSeleccionado,
     };
 
     onParticipantAdded(newParticipant);
-    toast.success("Participante registrado exitosamente", {
-      description: `${data.nombres} ${data.apellidos} ha sido agregado al sistema`
-    });
     reset();
     setCurrentSection(1);
     onOpenChange(false);
@@ -176,7 +172,7 @@ export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }:
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="tipoDocumento">Tipo de Documento *</Label>
-                  <Select onValueChange={(value) => setValue("tipoDocumento", value)}>
+                  <Select onValueChange={(value: string) => setValue("tipoDocumento", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione..." />
                     </SelectTrigger>
@@ -217,7 +213,7 @@ export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }:
 
                 <div>
                   <Label htmlFor="genero">Género *</Label>
-                  <Select onValueChange={(value) => setValue("genero", value)}>
+                  <Select onValueChange={(value: string) => setValue("genero", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione..." />
                     </SelectTrigger>
@@ -344,7 +340,7 @@ export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }:
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="areaLaboral">Área Laboral *</Label>
-                  <Select onValueChange={(value) => setValue("areaLaboral", value)}>
+                  <Select onValueChange={(value: string) => setValue("areaLaboral", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione..." />
                     </SelectTrigger>
@@ -380,7 +376,7 @@ export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }:
               
               <div>
                 <Label htmlFor="cursoSeleccionado">Curso a Inscribir *</Label>
-                <Select onValueChange={(value) => setValue("cursoSeleccionado", value)}>
+                <Select onValueChange={(value: string) => setValue("cursoSeleccionado", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione un curso..." />
                   </SelectTrigger>
@@ -397,7 +393,7 @@ export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }:
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="modalidad">Modalidad *</Label>
-                  <Select onValueChange={(value) => setValue("modalidad", value)}>
+                  <Select onValueChange={(value: string) => setValue("modalidad", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione..." />
                     </SelectTrigger>
@@ -411,7 +407,7 @@ export function NewParticipantDialog({ open, onOpenChange, onParticipantAdded }:
 
                 <div>
                   <Label htmlFor="nivelConocimiento">Nivel de Conocimiento</Label>
-                  <Select onValueChange={(value) => setValue("nivelConocimiento", value)}>
+                  <Select onValueChange={(value: string) => setValue("nivelConocimiento", value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione..." />
                     </SelectTrigger>

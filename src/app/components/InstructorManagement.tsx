@@ -1,24 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner@2.0.3";
+import type { CursoEvento } from "../models/curso";
+import { listarInstructoresDirectorio, registrarInstructor } from "../services/directorioService";
+import { usaBackend } from "../services/http";
 import { Plus, Search, Award, Users, UserCheck, BookOpen } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { InstructorsTable, mockInstructors, type Instructor } from "./InstructorsTable";
+import { InstructorsTable, type Instructor } from "./InstructorsTable";
 import { StatCard } from "./StatCard";
 import { NewInstructorDialog } from "./NewInstructorDialog";
 import { InstructorCertificateDesigner } from "./InstructorCertificateDesigner";
 
 /**
  * Vista contenedora del módulo de instructores: indicadores, buscador, registro de instructores
- * y diseñador de certificados. Rol: administrador.
+ * y diseñador de certificados. Rol: administrador. Con backend lista y registra en /api/instructores.
+ * Prop: cursos (para contar los cursos activos de cada instructor).
  */
-export function InstructorManagement() {
+export function InstructorManagement({ cursos = [] }: { cursos?: CursoEvento[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewInstructorOpen, setIsNewInstructorOpen] = useState(false);
   const [isCertificateDesignerOpen, setIsCertificateDesignerOpen] = useState(false);
-  const [instructors, setInstructors] = useState<Instructor[]>(mockInstructors);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
 
-  const handleInstructorAdded = (instructor: Instructor) => {
-    setInstructors((prev) => [...prev, instructor]);
+  // Carga el directorio desde el servicio (API o datos de demostración).
+  useEffect(() => {
+    let activo = true;
+    listarInstructoresDirectorio(cursos)
+      .then((lista) => activo && setInstructors(lista))
+      .catch((e: Error) => toast.error("No se pudo cargar el directorio de instructores", { description: e.message }));
+    return () => {
+      activo = false;
+    };
+  }, [cursos]);
+
+  /** Registra el instructor en el sistema y lo agrega al listado si el backend lo acepta. */
+  const handleInstructorAdded = async (instructor: Instructor) => {
+    try {
+      const { instructor: creado, contrasena } = await registrarInstructor(instructor);
+      setInstructors((prev) => [...prev, creado]);
+      if (usaBackend) toast.info("Contraseña temporal del instructor", { description: contrasena });
+    } catch (e) {
+      toast.error("No se pudo registrar el instructor", { description: e instanceof Error ? e.message : "" });
+    }
   };
 
   const stats = [

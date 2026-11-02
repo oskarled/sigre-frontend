@@ -637,7 +637,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-gray-500 mt-0.5" />
             <div className="flex-1">
-              <p className="font-semibold text-gray-900">Sistema SIGRE v1.3</p>
+              <p className="font-semibold text-gray-900">Sistema SIGRE v1.4</p>
               <p className="text-sm text-gray-600">
                 ECM Training Center • Última actualización: 19 Oct 2026
               </p>

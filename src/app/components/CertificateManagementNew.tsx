@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Search, FileText, Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Search, FileText, Download, ShieldCheck } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { CertificateDesigner } from "./CertificateDesigner";
@@ -19,6 +19,9 @@ import { can, mismoInstructor, type SessionUser } from "../lib/roles";
 import { toast } from "sonner@2.0.3";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { listarCertificados, verificarCertificado } from "../services/directorioService";
+import { exportarCSV } from "../lib/exportar";
+import { todayISO } from "../lib/dates";
 
 export interface Certificate {
   id: number;
@@ -28,11 +31,14 @@ export interface Certificate {
   estado: "emitido" | "pendiente" | "anulado";
   instructor: string;
   calificacion: string;
+  /** Código único de verificación (por ejemplo ECM-2026-DEMO0001). */
+  codigo?: string;
 }
 
 export const mockCertificates: Certificate[] = [
   {
     id: 1,
+    codigo: "ECM-2026-DEMO0001",
     participante: "Maria Perez",
     curso: "Coordinador de Trabajo en Alturas",
     fechaEmision: "07/08/2026",
@@ -42,6 +48,7 @@ export const mockCertificates: Certificate[] = [
   },
   {
     id: 2,
+    codigo: "ECM-2026-DEMO0002",
     participante: "María Fernanda Gómez",
     curso: "Seguridad Industrial",
     fechaEmision: "18/03/2026",
@@ -51,6 +58,7 @@ export const mockCertificates: Certificate[] = [
   },
   {
     id: 3,
+    codigo: "ECM-2026-DEMO0003",
     participante: "Diana Patricia Mora",
     curso: "Primeros Auxilios",
     fechaEmision: "16/09/2026",
@@ -60,6 +68,7 @@ export const mockCertificates: Certificate[] = [
   },
   {
     id: 4,
+    codigo: "ECM-2026-DEMO0004",
     participante: "Luis Fernando Torres",
     curso: "Coordinador de Trabajo en Alturas",
     fechaEmision: "07/08/2026",
@@ -69,6 +78,7 @@ export const mockCertificates: Certificate[] = [
   },
   {
     id: 5,
+    codigo: "ECM-2026-DEMO0005",
     participante: "Ana Patricia Silva",
     curso: "Espacios Confinados",
     fechaEmision: "22/05/2026",
@@ -106,6 +116,41 @@ export function CertificateManagementNew({ user }: CertificateManagementProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [isDesignerOpen, setIsDesignerOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  // Certificados: con backend vienen de GET /api/certificados; sin backend, de los datos de demostración.
+  const [certificados, setCertificados] = useState<Certificate[]>(mockCertificates);
+  const [codigoVerificar, setCodigoVerificar] = useState("");
+  const [verificado, setVerificado] = useState<{ ok: boolean; texto: string } | null>(null);
+
+  useEffect(() => {
+    let activo = true;
+    listarCertificados()
+      .then((lista) => activo && setCertificados(lista))
+      .catch((e: Error) => toast.error("No se pudieron cargar los certificados", { description: e.message }));
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  /** Verifica la autenticidad de un certificado por su código (GET /api/certificados/verificar/{codigo}). */
+  const handleVerificar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const c = await verificarCertificado(codigoVerificar);
+      setVerificado({ ok: true, texto: `Certificado válido: ${c.participante} · ${c.curso} · emitido el ${c.fechaEmision}` });
+    } catch (error) {
+      setVerificado({ ok: false, texto: error instanceof Error ? error.message : "No fue posible verificar el código" });
+    }
+  };
+
+  /** Exporta a CSV (Excel) los certificados visibles para el rol. */
+  const handleExportarListado = () => {
+    exportarCSV(
+      `certificados_sigre_${todayISO()}.csv`,
+      ["Código", "Participante", "Curso", "Instructor", "Fecha de emisión", "Estado", "Calificación"],
+      visibles.map((c) => [c.codigo ?? "", c.participante, c.curso, c.instructor, c.fechaEmision, c.estado, c.calificacion]),
+    );
+    toast.success("Listado exportado", { description: `${visibles.length} certificados en formato CSV (Excel)` });
+  };
 
   const handleNewCertificate = () => {
     setSelectedCertificate(null);
@@ -274,7 +319,7 @@ export function CertificateManagementNew({ user }: CertificateManagementProps) {
   };
 
   // Cada rol ve solo los certificados que le corresponden.
-  const visibles = mockCertificates.filter((cert) => {
+  const visibles = certificados.filter((cert) => {
     if (esParticipante) return cert.participante === user.nombre;
     if (user.role === "instructor") return mismoInstructor(cert.instructor, user.nombre);
     return true;
@@ -334,7 +379,7 @@ export function CertificateManagementNew({ user }: CertificateManagementProps) {
           <Button
             variant="outline"
             className="shadow-md"
-            onClick={() => toast.info("Exportar listado", { description: "Disponible en la siguiente versión" })}
+            onClick={handleExportarListado}
           >
             <Download className="w-4 h-4 mr-2" />
             Exportar listado
@@ -374,6 +419,32 @@ export function CertificateManagementNew({ user }: CertificateManagementProps) {
           </div>
         </div>
         )}
+
+        {/* Verificación de autenticidad por código */}
+        <form onSubmit={handleVerificar} className="bg-white rounded-xl p-4 sm:p-6 shadow-md border border-gray-100 space-y-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-green-700" />
+            <h2 className="font-semibold text-gray-900">Verificar un certificado</h2>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
+            <label htmlFor="codigo-certificado" className="sr-only">Código del certificado</label>
+            <Input
+              id="codigo-certificado"
+              placeholder="Ejemplo: ECM-2026-DEMO0001"
+              value={codigoVerificar}
+              onChange={(e) => {
+                setCodigoVerificar(e.target.value);
+                setVerificado(null);
+              }}
+            />
+            <Button type="submit" className="bg-green-700 hover:bg-green-800">Verificar</Button>
+          </div>
+          {verificado && (
+            <p role="status" className={`text-sm font-medium ${verificado.ok ? "text-green-800" : "text-red-700"}`}>
+              {verificado.texto}
+            </p>
+          )}
+        </form>
 
         {/* Search Bar */}
         <div className="bg-white rounded-xl p-4 sm:p-6 shadow-md border border-gray-100">

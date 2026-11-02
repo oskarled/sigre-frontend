@@ -20,13 +20,7 @@ export interface SessionUser {
   email: string;
 }
 
-// Usuarios de demostración. Son los mismos que crea CargaDatosDemostracion en el backend
-// (perfil dev). Cuando exista el módulo de autenticación (JWT), estos datos vendrán del token.
-export const DEMO_USERS: Record<UserRole, Omit<SessionUser, "email">> = {
-  participante: { role: "participante", idUsuario: 3, nombre: "Maria Perez" },
-  instructor: { role: "instructor", idUsuario: 2, idInstructor: 1, nombre: "Carlos Ortega" },
-  administrador: { role: "administrador", idUsuario: 1, nombre: "Elkin Caicedo" },
-};
+// Los usuarios de demostración y la validación de credenciales están en services/authService.ts.
 
 export const ROLE_LABEL: Record<UserRole, string> = {
   participante: "Participante",

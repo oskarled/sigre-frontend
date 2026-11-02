@@ -3,17 +3,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "./ui/button";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { toast } from "sonner@2.0.3";
-import { todayISO } from "../lib/dates";
+import { exportarCSV, leerCSV } from "../lib/exportar";
+import type { NuevoParticipante } from "../services/directorioService";
 
 interface ImportParticipantsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onParticipantsImported: (participants: any[]) => void;
+  /** Recibe las filas válidas del archivo; el contenedor las registra en el sistema. */
+  onParticipantsImported: (participants: NuevoParticipante[]) => void;
 }
 
 /**
- * Diálogo para importar participantes de forma masiva desde un archivo .xlsx, .xls o .csv.
- * Valida el formato del archivo y permite descargar la plantilla. Rol: administrador.
+ * Diálogo para importar participantes de forma masiva desde un archivo CSV (se guarda desde Excel
+ * con "CSV UTF-8"). Lee y valida cada fila (nombre, documento, correo) y descarga la plantilla.
+ * Rol: administrador.
  */
 export function ImportParticipantsDialog({ 
   open, 
@@ -32,14 +35,14 @@ export function ImportParticipantsDialog({
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validar que sea un archivo Excel
-      const validExtensions = ['.xlsx', '.xls', '.csv'];
+      const validExtensions = ['.csv'];
       const fileExtension = selectedFile.name.substring(selectedFile.name.lastIndexOf('.')).toLowerCase();
       
       if (validExtensions.includes(fileExtension)) {
         setFile(selectedFile);
         setImportResults(null);
       } else {
-        toast.error("Formato de archivo no válido. Use .xlsx, .xls o .csv");
+        toast.error("Formato no válido. En Excel use Archivo > Guardar como > CSV UTF-8 (.csv)");
       }
     }
   };
@@ -51,85 +54,39 @@ export function ImportParticipantsDialog({
     }
 
     setIsProcessing(true);
+    try {
+      const filas = leerCSV(await file.text());
+      if (filas.length > 1000) throw new Error("El archivo supera el máximo de 1000 registros");
 
-    // Simular procesamiento del archivo
-    setTimeout(() => {
-      // Datos de ejemplo que se importarían del Excel
-      const mockImportedParticipants = [
-        {
-          id: Date.now() + 1,
-          nombre: "Carlos Rodríguez",
-          documento: "1098765432",
-          empresa: "Constructora ABC S.A.S",
-          cargo: "Operario de Altura",
-          telefono: "310-5551234",
-          email: "carlos.rodriguez@constructoraabc.com",
-          curso: "Trabajos en Alturas",
-          estado: "Activo",
-          fechaInscripcion: todayISO()
-        },
-        {
-          id: Date.now() + 2,
-          nombre: "María Fernanda López",
-          documento: "1087654321",
-          empresa: "Industrias Metalúrgicas XYZ",
-          cargo: "Supervisor HSE",
-          telefono: "320-5554321",
-          email: "mf.lopez@metalurgicas.com",
-          curso: "Seguridad Industrial",
-          estado: "Activo",
-          fechaInscripcion: todayISO()
-        },
-        {
-          id: Date.now() + 3,
-          nombre: "Juan Pablo Martínez",
-          documento: "1076543210",
-          empresa: "Petroquímica del Valle",
-          cargo: "Técnico de Mantenimiento",
-          telefono: "315-5552222",
-          email: "jp.martinez@petrovalle.com",
-          curso: "Riesgo Eléctrico",
-          estado: "Activo",
-          fechaInscripcion: todayISO()
-        },
-        {
-          id: Date.now() + 4,
-          nombre: "Ana Lucía Gómez",
-          documento: "1065432109",
-          empresa: "Servicios Generales Ltda",
-          cargo: "Coordinadora de Seguridad",
-          telefono: "318-5553333",
-          email: "ana.gomez@servicios.com",
-          curso: "Primeros Auxilios",
-          estado: "Activo",
-          fechaInscripcion: todayISO()
-        },
-        {
-          id: Date.now() + 5,
-          nombre: "Roberto Sánchez",
-          documento: "1054321098",
-          empresa: "Construcciones del Norte",
-          cargo: "Ingeniero Civil",
-          telefono: "300-5554444",
-          email: "roberto.sanchez@construnorte.com",
-          curso: "Espacios Confinados",
-          estado: "Activo",
-          fechaInscripcion: todayISO()
-        }
-      ];
+      // Columnas esperadas (sin tildes ni mayúsculas): nombre, documento, correo/email, telefono, empresa, cargo, curso
+      const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const validos: NuevoParticipante[] = [];
+      filas.forEach((f) => {
+        const datos: NuevoParticipante = {
+          nombre: f.nombre ?? "",
+          documento: (f.documento ?? "").replace(/\D/g, ""),
+          correo: f.correo || f.email || "",
+          telefono: f.telefono ?? "",
+          empresa: f.empresa ?? "",
+          cargo: f.cargo ?? "",
+          curso: f.curso ?? "",
+        };
+        if (datos.nombre && datos.documento.length >= 5 && correoValido.test(datos.correo)) validos.push(datos);
+      });
 
-      const results = {
-        success: mockImportedParticipants.length,
-        failed: 0,
-        total: mockImportedParticipants.length
-      };
-
+      const results = { success: validos.length, failed: filas.length - validos.length, total: filas.length };
       setImportResults(results);
-      onParticipantsImported(mockImportedParticipants);
+      if (validos.length > 0) onParticipantsImported(validos);
+      if (results.failed > 0) {
+        toast.warning(`${results.failed} filas no se importaron`, {
+          description: "Revise que tengan nombre, documento (solo números) y un correo válido",
+        });
+      }
+    } catch (error) {
+      toast.error("No se pudo leer el archivo", { description: error instanceof Error ? error.message : "" });
+    } finally {
       setIsProcessing(false);
-
-      toast.success(`¡Importación exitosa! ${results.success} participantes agregados.`);
-    }, 2000);
+    }
   };
 
   const handleClose = () => {
@@ -138,9 +95,14 @@ export function ImportParticipantsDialog({
     onOpenChange(false);
   };
 
+  /** Descarga la plantilla CSV con los encabezados esperados y una fila de ejemplo. */
   const downloadTemplate = () => {
-    toast.success("Descargando plantilla de Excel...");
-    // En una implementación real, aquí se descargaría un archivo Excel de plantilla
+    exportarCSV(
+      "plantilla_participantes_sigre.csv",
+      ["Nombre", "Documento", "Correo", "Telefono", "Empresa", "Cargo", "Curso"],
+      [["Juan Pablo Martinez", "1045234890", "juan.martinez@correo.com", "3001234567", "Construcciones Seguras S.A.S.", "Operario", "Trabajo en Alturas Nivel Avanzado"]],
+    );
+    toast.success("Plantilla descargada", { description: "Ábrala en Excel, complete los datos y guárdela como CSV UTF-8" });
   };
 
   return (
@@ -160,8 +122,8 @@ export function ImportParticipantsDialog({
               Instrucciones de importación:
             </h4>
             <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-              <li>El archivo debe ser formato Excel (.xlsx, .xls) o CSV (.csv)</li>
-              <li>Debe contener las siguientes columnas: Nombre, Documento, Empresa, Cargo, Teléfono, Email, Curso</li>
+              <li>El archivo debe ser CSV (.csv). Desde Excel: Archivo &gt; Guardar como &gt; CSV UTF-8</li>
+              <li>Columnas: Nombre, Documento, Correo, Telefono, Empresa, Cargo, Curso (use la plantilla)</li>
               <li>La primera fila debe contener los encabezados</li>
               <li>Máximo 1000 registros por importación</li>
             </ul>
@@ -175,7 +137,7 @@ export function ImportParticipantsDialog({
               className="border-green-300 text-green-700 hover:bg-green-50"
             >
               <Download className="w-4 h-4 mr-2" />
-              Descargar Plantilla de Excel
+              Descargar plantilla (CSV para Excel)
             </Button>
           </div>
 
@@ -185,7 +147,7 @@ export function ImportParticipantsDialog({
               type="file"
               id="file-upload"
               className="hidden"
-              accept=".xlsx,.xls,.csv"
+              accept=".csv"
               onChange={handleFileChange}
               disabled={isProcessing}
             />
@@ -224,7 +186,7 @@ export function ImportParticipantsDialog({
                     o arrastra y suelta aquí
                   </p>
                   <p className="text-xs text-gray-400">
-                    Formatos soportados: .xlsx, .xls, .csv
+                    Formato soportado: .csv (UTF-8)
                   </p>
                 </div>
               )}

@@ -297,7 +297,7 @@ export function InstructorCertificateDesigner({ open, onOpenChange, instructor }
                       </Label>
                       <Select
                         value={formData.tipoCertificacion}
-                        onValueChange={(value) => handleInputChange("tipoCertificacion", value)}
+                        onValueChange={(value: string) => handleInputChange("tipoCertificacion", value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione el tipo" />
@@ -317,7 +317,7 @@ export function InstructorCertificateDesigner({ open, onOpenChange, instructor }
                       <Label htmlFor="especialidad">Especialidad</Label>
                       <Select
                         value={formData.especialidad}
-                        onValueChange={(value) => handleInputChange("especialidad", value)}
+                        onValueChange={(value: string) => handleInputChange("especialidad", value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione especialidad" />
