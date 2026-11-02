@@ -1,8 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner@2.0.3";
 import { Plus, Search, Upload, Users, UserCheck, GraduationCap, Building2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { ParticipantsTable, mockParticipants, type Participant } from "./ParticipantsTable";
+import { ParticipantsTable, type Participant } from "./ParticipantsTable";
+import { listarParticipantes, registrarParticipante, type NuevoParticipante } from "../services/directorioService";
+import { usaBackend } from "../services/http";
 import { Pagination } from "./Pagination";
 import { NewParticipantDialog } from "./NewParticipantDialog";
 import { ImportParticipantsDialog } from "./ImportParticipantsDialog";
@@ -29,13 +32,50 @@ export function ParticipantManagement({ user, cursos }: ParticipantManagementPro
 }
 
 // Directorio general de participantes (administrador).
-// Pendiente en el backend: módulo de usuarios (GET/POST /api/usuarios). Mientras tanto usa datos de ejemplo.
+// Con backend lista GET /api/usuarios?rol=ASISTENTE y registra con POST /api/auth/registro.
 function DirectorioParticipantes({ user }: { user: SessionUser }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isNewParticipantOpen, setIsNewParticipantOpen] = useState(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [participants, setParticipants] = useState<Participant[]>(mockParticipants);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  // Carga inicial del directorio desde el servicio (API o datos de demostración).
+  useEffect(() => {
+    let activo = true;
+    listarParticipantes()
+      .then((lista) => activo && setParticipants(lista))
+      .catch((e: Error) => toast.error("No se pudo cargar el directorio", { description: e.message }))
+      .finally(() => activo && setCargando(false));
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  /** Registra uno o varios participantes y agrega al listado los que el sistema acepta. */
+  const registrar = async (lista: NuevoParticipante[]) => {
+    const creados: Participant[] = [];
+    const errores: string[] = [];
+    for (const datos of lista) {
+      try {
+        const { participante, contrasena } = await registrarParticipante(datos);
+        creados.push(participante);
+        if (lista.length === 1) {
+          toast.success("Participante registrado", {
+            description: usaBackend
+              ? `${participante.nombre} · contraseña temporal: ${contrasena}`
+              : `${participante.nombre} fue agregado al directorio`,
+          });
+        }
+      } catch (e) {
+        errores.push(`${datos.nombre}: ${e instanceof Error ? e.message : "error"}`);
+      }
+    }
+    if (creados.length) setParticipants((prev) => [...prev, ...creados]);
+    if (lista.length > 1 && creados.length) toast.success(`${creados.length} participantes importados`);
+    if (errores.length) toast.error(`${errores.length} registros rechazados`, { description: errores.slice(0, 3).join(" · ") });
+  };
 
   const puedeGestionar = can.gestionarParticipantes(user.role);
 
@@ -124,7 +164,13 @@ function DirectorioParticipantes({ user }: { user: SessionUser }) {
           </h2>
 
           <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <ParticipantsTable participants={pagina} />
+            {cargando ? (
+              <p className="p-6 text-sm text-gray-600" role="status">Cargando participantes…</p>
+            ) : filtrados.length === 0 ? (
+              <p className="p-6 text-sm text-gray-600">No hay participantes que coincidan con la búsqueda.</p>
+            ) : (
+              <ParticipantsTable participants={pagina} />
+            )}
           </div>
 
           {totalPages > 1 && <Pagination currentPage={page} totalPages={totalPages} onPageChange={setCurrentPage} />}
@@ -135,12 +181,12 @@ function DirectorioParticipantes({ user }: { user: SessionUser }) {
             <NewParticipantDialog
               open={isNewParticipantOpen}
               onOpenChange={setIsNewParticipantOpen}
-              onParticipantAdded={(p) => setParticipants((prev) => [...prev, p])}
+              onParticipantAdded={(datos) => registrar([datos])}
             />
             <ImportParticipantsDialog
               open={isImportDialogOpen}
               onOpenChange={setIsImportDialogOpen}
-              onParticipantsImported={(list) => setParticipants((prev) => [...prev, ...list])}
+              onParticipantsImported={(lista) => registrar(lista)}
             />
           </>
         )}
