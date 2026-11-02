@@ -1,5 +1,19 @@
 # Historial de cambios
 
+## v1.4.0 · Correcciones de la evidencia GA7-220501096-AA4-EV03
+
+- **Inicio de sesión real**: nuevo `authService` que valida en `POST /api/auth/login` (modo conectado) o contra
+  los usuarios de demostración con su contraseña (modo demostración). Antes cualquier correo y contraseña
+  entraban. El rol lo asigna el sistema y los errores se muestran en el formulario.
+- **Directorio de participantes conectado**: lista `GET /api/usuarios?rol=ASISTENTE` y registra con
+  `POST /api/auth/registro` (contraseña temporal). La importación ahora lee de verdad el archivo CSV,
+  valida cada fila e informa las rechazadas; la plantilla se descarga.
+- **Directorio de instructores conectado**: `GET` y `POST /api/instructores`; "Nuevo curso" usa la lista real.
+- **Certificados**: listado desde `GET /api/certificados`, verificación por código
+  (`/api/certificados/verificar/{codigo}`) y exportación del listado a CSV.
+- **Reportes**: reporte de ocupación con los cursos del sistema y exportación real a PDF (jsPDF) y Excel (CSV).
+- **Calidad**: TypeScript en modo `strict` sin errores, 42 pruebas unitarias (antes 21).
+
 ## v1.3.0 · Evidencia GA7-220501096-AA4-EV03
 
 - **Comentarios en el código**: cada componente tiene un comentario de documentación (JSDoc) que explica su
@@ -25,7 +39,7 @@
 - **Pruebas** con Vitest (21 pruebas) e **integración continua** con GitHub Actions.
 - Documentación: README, flujo de ramas (CONTRIBUTING.md), `.env.example` y cambios sugeridos al backend
   (`docs/backend`).
-- Usuarios de demostración iguales a los del backend: Maria Perez, Carlos Ortega y Laura Mendoza.
+- Usuarios de demostración iguales a los del backend: Maria Perez, Carlos Ortega y Elkin Caicedo.
 
 ## v1.1.0 · Revisión del prototipo de Figma Make
 

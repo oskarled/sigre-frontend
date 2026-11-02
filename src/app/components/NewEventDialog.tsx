@@ -183,7 +183,7 @@ export function NewEventDialog({ open, onOpenChange, onCrear }: NewEventDialogPr
           </Campo>
 
           <Campo id="idInstructor" label="Instructor a cargo" error={errors.idInstructor?.message}>
-            <Select onValueChange={(v) => setValue("idInstructor", v, { shouldValidate: true })}>
+            <Select onValueChange={(v: string) => setValue("idInstructor", v, { shouldValidate: true })}>
               <SelectTrigger id="idInstructor" aria-invalid={!!errors.idInstructor}>
                 <SelectValue placeholder="Seleccione el instructor" />
               </SelectTrigger>

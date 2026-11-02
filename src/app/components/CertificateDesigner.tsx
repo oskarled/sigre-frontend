@@ -312,7 +312,7 @@ export function CertificateDesigner({ open, onOpenChange, certificate }: Certifi
                       </Label>
                       <Select
                         value={formData.curso}
-                        onValueChange={(value) => handleInputChange("curso", value)}
+                        onValueChange={(value: string) => handleInputChange("curso", value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione el curso" />
@@ -387,7 +387,7 @@ export function CertificateDesigner({ open, onOpenChange, certificate }: Certifi
                       <Label htmlFor="instructor">Instructor</Label>
                       <Select
                         value={formData.instructor}
-                        onValueChange={(value) => handleInputChange("instructor", value)}
+                        onValueChange={(value: string) => handleInputChange("instructor", value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione instructor" />

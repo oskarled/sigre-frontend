@@ -44,14 +44,10 @@ export const httpCursosService: CursosService = {
 
   inscripcionesDeCurso: (idCurso) => apiFetch<Inscripcion[]>(`/api/cursos/${idCurso}/inscripciones`),
 
-  // El backend todavía no expone GET /api/instructores. Mientras tanto se usan los
-  // instructores que ya tienen cursos y, si no hay ninguno, el instructor de demostración (id 1).
+  // GET /api/instructores devuelve InstructorResponse; aquí solo se necesitan id y nombre.
   listarInstructores: async () => {
-    const cursos = await apiFetch<CursoEvento[]>("/api/cursos");
-    const mapa = new Map<number, string>();
-    cursos.forEach((c) => mapa.set(c.idInstructor, c.nombreInstructor));
-    if (mapa.size === 0) mapa.set(1, "Carlos Ortega");
-    return [...mapa].map(([id, nombre]) => ({ id, nombre }));
+    const instructores = await apiFetch<{ id: number; nombre: string }[]>("/api/instructores");
+    return instructores.map(({ id, nombre }) => ({ id, nombre }));
   },
 };
 

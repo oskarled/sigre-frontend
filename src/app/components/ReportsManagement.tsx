@@ -14,8 +14,13 @@ import {
   Filter, FileSpreadsheet
 } from "lucide-react";
 import { toast } from "sonner@2.0.3";
+import type { CursoEvento } from "../models/curso";
+import { exportarCSV, exportarTablaPDF } from "../lib/exportar";
+import { ENCABEZADOS_REPORTE_CURSOS, filasReporteCursos, ocupacion, resumenCursos } from "../lib/reportes";
+import { todayISO } from "../lib/dates";
 
-// Mock data para gráficos
+// Indicadores históricos de ejemplo para los gráficos: el backend aún no expone un
+// endpoint de estadísticas por periodo. El reporte de ocupación sí usa los cursos reales.
 const eventosData = [
   { mes: "Ene", eventos: 12, participantes: 145, certificados: 120 },
   { mes: "Feb", eventos: 15, participantes: 178, certificados: 156 },
@@ -64,31 +69,33 @@ const certificacionesMensuales = [
 ];
 
 /**
- * Módulo de reportes: indicadores y gráficos (Recharts) por periodo, organizados en pestañas, con exportación.
- * Rol: administrador.
+ * Módulo de reportes: reporte de ocupación de cursos con datos del sistema (exportable a PDF y
+ * Excel/CSV) e indicadores históricos en gráficos (Recharts). Rol: administrador.
+ * Prop: cursos (los mismos que consulta App a través de cursosService).
  */
-export function ReportsManagement() {
+export function ReportsManagement({ cursos = [] }: { cursos?: CursoEvento[] }) {
   const [periodo, setPeriodo] = useState("6meses");
   const [tipoReporte, setTipoReporte] = useState("general");
   const [activeTab, setActiveTab] = useState("general");
 
+  const filas = filasReporteCursos(cursos);
+  const resumen = resumenCursos(cursos);
+
+  /** Descarga el reporte de ocupación de cursos en PDF (jsPDF). */
   const handleExportPDF = () => {
-    toast.success("Exportando a PDF", {
-      description: "El reporte se está generando y descargará en breve"
-    });
+    if (filas.length === 0) return toast.error("No hay cursos para exportar");
+    exportarTablaPDF(`reporte_cursos_sigre_${todayISO()}.pdf`, "Reporte de ocupación de cursos", ENCABEZADOS_REPORTE_CURSOS, filas);
+    toast.success("Reporte PDF descargado", { description: `${filas.length} cursos incluidos` });
   };
 
+  /** Descarga el mismo reporte en CSV, que Excel abre directamente. */
   const handleExportExcel = () => {
-    toast.success("Exportando a Excel", {
-      description: "El archivo se está generando y descargará en breve"
-    });
+    if (filas.length === 0) return toast.error("No hay cursos para exportar");
+    exportarCSV(`reporte_cursos_sigre_${todayISO()}.csv`, ENCABEZADOS_REPORTE_CURSOS, filas);
+    toast.success("Reporte para Excel descargado", { description: `${filas.length} cursos incluidos` });
   };
 
-  const handleGenerateReport = () => {
-    toast.info("Generando reporte personalizado", {
-      description: "Por favor espere mientras procesamos los datos"
-    });
-  };
+  const handleGenerateReport = handleExportPDF;
 
   return (
     <div className="p-8">
@@ -145,6 +152,42 @@ export function ReportsManagement() {
             </Button>
           </div>
         </div>
+
+        {/* Reporte con datos reales del sistema */}
+        <Card className="p-6 space-y-4" aria-labelledby="titulo-ocupacion">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="titulo-ocupacion" className="text-xl font-semibold text-gray-900">Ocupación de cursos (datos del sistema)</h2>
+            <p className="text-sm text-gray-600">
+              {resumen.totalCursos} cursos · {resumen.programados} programados · {resumen.inscritos} inscritos · ocupación promedio {resumen.ocupacionPromedio} %
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-600 border-b">
+                  {ENCABEZADOS_REPORTE_CURSOS.map((h) => (
+                    <th key={h} className="py-2 pr-4 font-semibold">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filas.map((fila, i) => (
+                  <tr key={i} className="border-b last:border-0">
+                    {fila.map((v, j) => (
+                      <td key={j} className="py-2 pr-4 text-gray-800">{v}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filas.length === 0 && <p className="py-4 text-sm text-gray-600">No hay cursos registrados.</p>}
+          </div>
+          {cursos.some((c) => ocupacion(c) >= 80) && (
+            <p className="text-sm text-amber-800">Hay cursos con ocupación igual o mayor al 80 %: considere abrir nuevas fechas.</p>
+          )}
+        </Card>
+
+        <p className="text-sm text-gray-600">Los indicadores y gráficos siguientes son históricos de ejemplo mientras el backend expone las estadísticas por periodo.</p>
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

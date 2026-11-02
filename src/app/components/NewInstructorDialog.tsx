@@ -1,3 +1,4 @@
+import type { Instructor } from "./InstructorsTable";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -12,7 +13,7 @@ import { GraduationCap, User, Award, Briefcase } from "lucide-react";
 interface NewInstructorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onInstructorAdded: (instructor: any) => void;
+  onInstructorAdded: (instructor: Instructor) => void;
 }
 
 interface InstructorFormData {
@@ -70,7 +71,9 @@ export function NewInstructorDialog({ open, onOpenChange, onInstructorAdded }: N
   const { register, handleSubmit, formState: { errors }, reset, watch, setValue } = useForm<InstructorFormData>();
 
   const onSubmit = (data: InstructorFormData) => {
+    // Primero los datos del formulario; después los campos calculados que los complementan.
     const newInstructor = {
+      ...data,
       id: Date.now(),
       nombre: `${data.nombres} ${data.apellidos}`,
       documento: data.numeroDocumento,
@@ -83,7 +86,6 @@ export function NewInstructorDialog({ open, onOpenChange, onInstructorAdded }: N
       cursosActivos: 0,
       estado: "Activo",
       fechaRegistro: new Date().toLocaleDateString('es-CO'),
-      ...data
     };
 
     onInstructorAdded(newInstructor);
@@ -213,7 +215,7 @@ export function NewInstructorDialog({ open, onOpenChange, onInstructorAdded }: N
                     <Label htmlFor="tipoDocumento">
                       Tipo de Documento <span className="text-red-500">*</span>
                     </Label>
-                    <Select onValueChange={(value) => setValue("tipoDocumento", value)}>
+                    <Select onValueChange={(value: string) => setValue("tipoDocumento", value)}>
                       <SelectTrigger className={errors.tipoDocumento ? "border-red-500" : ""}>
                         <SelectValue placeholder="Seleccione" />
                       </SelectTrigger>
@@ -255,7 +257,7 @@ export function NewInstructorDialog({ open, onOpenChange, onInstructorAdded }: N
 
                   <div>
                     <Label htmlFor="genero">Género</Label>
-                    <Select onValueChange={(value) => setValue("genero", value)}>
+                    <Select onValueChange={(value: string) => setValue("genero", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione" />
                       </SelectTrigger>
@@ -379,7 +381,7 @@ export function NewInstructorDialog({ open, onOpenChange, onInstructorAdded }: N
                     <Label htmlFor="especialidad">
                       Especialidad Principal <span className="text-red-500">*</span>
                     </Label>
-                    <Select onValueChange={(value) => setValue("especialidad", value)}>
+                    <Select onValueChange={(value: string) => setValue("especialidad", value)}>
                       <SelectTrigger className={errors.especialidad ? "border-red-500" : ""}>
                         <SelectValue placeholder="Seleccione especialidad" />
                       </SelectTrigger>
@@ -399,7 +401,7 @@ export function NewInstructorDialog({ open, onOpenChange, onInstructorAdded }: N
 
                   <div>
                     <Label htmlFor="nivelEducativo">Nivel Educativo</Label>
-                    <Select onValueChange={(value) => setValue("nivelEducativo", value)}>
+                    <Select onValueChange={(value: string) => setValue("nivelEducativo", value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione" />
                       </SelectTrigger>

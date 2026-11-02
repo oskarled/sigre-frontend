@@ -149,11 +149,11 @@ export default function App() {
       case "participantes":
         return <ParticipantManagement user={user} cursos={cursos} />;
       case "instructores":
-        return <InstructorManagement />;
+        return <InstructorManagement cursos={cursos} />;
       case "certificados":
         return <CertificateManagementNew user={user} />;
       case "reportes":
-        return <ReportsManagement />;
+        return <ReportsManagement cursos={cursos} />;
       case "inicio":
       default:
         return (
