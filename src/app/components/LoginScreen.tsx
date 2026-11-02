@@ -7,7 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Mail, Lock, User, GraduationCap, Award, Eye, EyeOff, ShieldCheck, Settings } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import logoECM from "figma:asset/7c493e705c8937b276f08841602854180eaa99e0.png";
-import { DEMO_USERS, ROLE_LABEL, type SessionUser, type UserRole } from "../lib/roles";
+import { ROLE_LABEL, type SessionUser, type UserRole } from "../lib/roles";
+import { CONTRASENA_DEMO, correoDemo, iniciarSesion } from "../services/authService";
+import { usaBackend } from "../services/http";
 
 interface LoginScreenProps {
   onLogin: (user: SessionUser) => void;
@@ -16,16 +18,25 @@ interface LoginScreenProps {
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Pantalla de inicio de sesión: selección de rol, correo y contraseña con validación.
- * Mientras no exista autenticación con JWT, entra con el usuario de demostración del rol elegido.
+ * Pantalla de inicio de sesión: valida el formulario y autentica con authService.
+ * Con backend, el rol lo asigna el servidor (POST /api/auth/login); sin backend se validan
+ * los usuarios de demostración. Las pestañas de rol solo cambian la apariencia y, en modo
+ * demostración, autocompletan el correo de prueba de ese rol.
  */
 export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<UserRole>("participante");
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: usaBackend ? "" : correoDemo("participante"), password: "" });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [enviando, setEnviando] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /** Cambia la pestaña de rol; en modo demostración precarga el correo de prueba de ese rol. */
+  const cambiarRol = (nuevo: UserRole) => {
+    setRole(nuevo);
+    if (!usaBackend) setForm({ email: correoDemo(nuevo), password: "" });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const nextErrors: typeof errors = {};
@@ -39,9 +50,21 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       return;
     }
 
-    // Prototipo: no hay servidor de autenticación. Se entra con el usuario de demostración del rol elegido.
-    toast.success("Inicio de sesión exitoso", { description: "Bienvenido al Sistema SIGRE" });
-    setTimeout(() => onLogin({ ...DEMO_USERS[role], email: form.email }), 400);
+    setEnviando(true);
+    try {
+      // El rol de la sesión es el que devuelve el sistema, no la pestaña elegida.
+      const usuario = await iniciarSesion(form.email, form.password);
+      toast.success("Inicio de sesión exitoso", {
+        description: `Bienvenido(a), ${usuario.nombre} (${ROLE_LABEL[usuario.role]})`,
+      });
+      onLogin(usuario);
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : "No fue posible iniciar sesión";
+      setErrors({ password: mensaje });
+      toast.error(mensaje);
+    } finally {
+      setEnviando(false);
+    }
   };
 
   const buttonClass: Record<UserRole, string> = {
@@ -149,7 +172,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               </CardHeader>
 
               <CardContent>
-                <Tabs value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                <Tabs value={role} onValueChange={(value: string) => cambiarRol(value as UserRole)}>
                   <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="participante" className="flex items-center gap-1.5">
                       <User className="w-4 h-4 hidden sm:block" />
@@ -235,9 +258,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
                   <Button
                     type="submit"
+                    disabled={enviando}
                     className={`w-full text-white font-semibold py-6 shadow-lg ${buttonClass[role]}`}
                   >
-                    Ingresar como {ROLE_LABEL[role]}
+                    {enviando ? "Validando credenciales..." : `Ingresar como ${ROLE_LABEL[role]}`}
                   </Button>
 
                   {role === "participante" ? (
@@ -259,21 +283,30 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                   )}
                 </form>
 
-                {/* Aviso de prototipo */}
-                <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-xs font-semibold text-amber-900 mb-1">Modo demostración (prototipo)</p>
-                  <p className="text-xs text-amber-900">
-                    Esta versión no tiene servidor de autenticación: con cualquier correo válido y contraseña
-                    entras con un usuario de prueba del rol elegido.
-                  </p>
-                </div>
+                {/* Aviso del modo de autenticación */}
+                {usaBackend ? (
+                  <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-xs font-semibold text-green-900 mb-1">Conectado al backend de SIGRE</p>
+                    <p className="text-xs text-green-900">
+                      Las credenciales se validan en el servidor y el rol lo asigna el sistema.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
+                    <p className="text-xs font-semibold text-amber-900 mb-1">Modo demostración (sin backend)</p>
+                    <p className="text-xs text-amber-900">
+                      Elige un rol para cargar su correo de prueba. Contraseña de los usuarios de prueba:{" "}
+                      <span className="font-mono font-semibold">{CONTRASENA_DEMO}</span>. Otras credenciales se rechazan.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Footer */}
             <div className="text-center mt-6 text-sm text-white/90">
               <p>© {new Date().getFullYear()} ECM Training Center. Todos los derechos reservados.</p>
-              <p className="mt-1">Sistema SIGRE v1.3</p>
+              <p className="mt-1">Sistema SIGRE v1.4</p>
             </div>
           </div>
         </div>
